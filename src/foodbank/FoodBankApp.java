@@ -1,8 +1,9 @@
 /*
  
 */
-package foodbridge.foodbank;
+package foodbank;
 
+import gui.FoodBankGUI;
 import java.awt.EventQueue;
 
 /**
