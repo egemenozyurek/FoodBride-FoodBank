@@ -1,0 +1,43 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package models;
+
+/**
+ *
+ * @author egeme
+ */
+public class DryStorage extends StorageUnit{
+    private int shelfCount;
+
+    public DryStorage(String unitId, String location, int capacity, int shelfCount) {
+        super(unitId, location, capacity, 20.0);
+        this.shelfCount = shelfCount;
+    }
+    
+    // Overloaded: default capacity 300 and 6 shelves
+    public DryStorage(String unitId, String location) {
+        this(unitId, location, 300, 6);
+    }
+
+    public int getShelfCount() {
+        return shelfCount;
+    }
+
+    public void setShelfCount(int shelfCount) {
+        this.shelfCount = shelfCount;
+    }
+    
+    @Override
+    public boolean canStore(StockItem item) {
+        return item.getStorageType().equals("Ambient")
+                && getFreeSpace() >= item.getQuantity();
+    }
+    
+    @Override
+    public String displayDetails(){
+        return super.displayDetails() + " | " + shelfCount + " shelves";
+    }
+    
+}

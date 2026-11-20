@@ -68,5 +68,10 @@ public abstract class StorageUnit implements Serializable, TemperatureControl{
         this.temperature = temperature;
     }
     
+    public String displayDetails() {
+        int used = capacity - getFreeSpace();
+        return getClass().getSimpleName().toUpperCase() + " " + unitId + " | "
+                + " | " + temperature + " C | " + used + "/" + capacity;
+    }
     
 }
