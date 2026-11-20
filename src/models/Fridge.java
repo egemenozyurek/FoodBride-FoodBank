@@ -34,6 +34,7 @@ public class Fridge extends StorageUnit{
                 && getFreeSpace() >= item.getQuantity();
     }
     
+    @Override
     public String displayDetails() {
         return super.displayDetails() + " | humidity " + humidityLevel + "%";
     }
