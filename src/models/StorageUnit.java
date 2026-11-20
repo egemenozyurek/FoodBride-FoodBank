@@ -30,6 +30,10 @@ public abstract class StorageUnit implements Serializable, TemperatureControl{
         this.temperature = temperature;
         this.stockItems = new ArrayList<>();
     }
+    
+    public ArrayList<StockItem> getStockItems(){
+        return stockItems;
+    }
 
     public String getUnitId() {
         return unitId;
