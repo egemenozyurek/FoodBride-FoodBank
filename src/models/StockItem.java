@@ -4,12 +4,14 @@
  */
 package models;
 
+import java.io.Serializable;
+
 /**
  * One line of stock in the food bank, e.g. 4 x cans of beans
  * 
  * @author egeme
  */
-public class StockItem {
+public class StockItem implements Serializable{
     
     private String stockId, name, category, expiryDate, storageType;
     private int quantity;

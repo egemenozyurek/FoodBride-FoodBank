@@ -372,6 +372,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
         
         StockItem item = new StockItem(id, name, category, expiry, storageType, quantity);
         if (manager.addStock(item)) {
+            manager.saveToFile();
             showInfo(name + " was added to stock");
             clearFields();
             outputArea.setText(manager.displayAllStock());
@@ -382,6 +383,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
 
     private void displayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayBtnActionPerformed
         // TODO add your handling code here:
+        manager.loadFromFile();
         outputArea.setText(manager.displayAllStock());
         outputArea.setCaretPosition(0);
     }//GEN-LAST:event_displayBtnActionPerformed
@@ -406,6 +408,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
         }
         
         if (manager.deleteStock(id)) {
+            manager.saveToFile();
             showInfo("Stock item " + id + " was deleted.");
             clearFields();
             outputArea.setText(manager.displayAllStock());

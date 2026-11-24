@@ -4,6 +4,13 @@
  */
 package manager;
 
+import interfaces.FileStorable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import models.DryStorage;
@@ -16,13 +23,16 @@ import models.StorageUnit;
  *
  * @author egeme
  */
-public class InventoryManager {
+public class InventoryManager implements FileStorable{
     private ArrayList<StorageUnit> storageUnits;
     private int lowStockThreshold;
+    private static final String fileName = "foodbank.dat";
     
     public InventoryManager() {
         storageUnits = new ArrayList<>();
         lowStockThreshold = 10;
+        
+        loadFromFile();
         
         addStorageUnit(new Fridge("FR1", "back Room"));
         addStorageUnit(new Freezer("FZ1", "Back room"));
@@ -121,4 +131,29 @@ public class InventoryManager {
     public int getLowStockThreshold() {
         return lowStockThreshold;
     }   
+
+    @Override
+    public void saveToFile() {
+        try(ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName))){
+            out.writeObject(storageUnits);
+        } catch(IOException e) {
+            System.out.println("Could not save " + fileName + ": " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void loadFromFile() {
+        File file = new File(fileName);
+        
+        if (!file.exists()) {
+            return;
+        }
+        
+        try(ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))){
+            storageUnits = (ArrayList<StorageUnit>) in.readObject();
+        } catch(IOException | ClassNotFoundException e) {
+            System.out.println("Could not load " + fileName + ": " + e.getMessage());
+            storageUnits = new ArrayList<>();
+        }
+    }
 }
