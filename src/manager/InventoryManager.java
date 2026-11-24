@@ -120,7 +120,5 @@ public class InventoryManager {
 
     public int getLowStockThreshold() {
         return lowStockThreshold;
-    }
-    
-    
+    }   
 }
