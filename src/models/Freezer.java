@@ -10,6 +10,8 @@ package models;
  */
 public class Freezer extends StorageUnit{
     
+    private static final long serialVersionUID = 1L;
+    
     private String defrostDate;
 
     public Freezer(String unitId, String location, int capacity, double temperature) {

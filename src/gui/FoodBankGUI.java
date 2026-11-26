@@ -4,8 +4,8 @@
  */
 package gui;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
+import exceptions.FoodBankException;
+import exceptions.StockNotFoundException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javax.swing.JOptionPane;
@@ -17,45 +17,44 @@ import models.StockItem;
  * @author egeme
  */
 public class FoodBankGUI extends javax.swing.JFrame {
-    
+
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FoodBankGUI.class.getName());
-    
+
     private InventoryManager manager;
-    
-    public FoodBankGUI(){
+
+    public FoodBankGUI() {
         this(new InventoryManager());
     }
 
     /**
      * Creates new form FoodBankGUI
+     *
      * @param manager
      */
-    
     public FoodBankGUI(InventoryManager manager) {
         initComponents();
-        this.manager = manager; 
-        
+        this.manager = manager;
+
         addBtn.addActionListener(this::addBtnActionPerformed);
         displayBtn.addActionListener(this::displayBtnActionPerformed);
         deleteBtn.addActionListener(this::deleteBtnActionPerformed);
         lowStockBtn.addActionListener(this::lowStockBtnActionPerformed);
         clearBtn.addActionListener(this::clearBtnActionPerformed);
-        searchField.addActionListener(evt -> searchBtn.doClick()); 
-        
-        
+        searchField.addActionListener(evt -> searchBtn.doClick());
+
         getRootPane().setDefaultButton(addBtn);
         setLocationRelativeTo(null);
     }
-    
+
     private void showError(String message) {
         JOptionPane.showMessageDialog(this, message, "Food Bank", JOptionPane.ERROR_MESSAGE);
     }
-    
-    private void showInfo(String message){
+
+    private void showInfo(String message) {
         JOptionPane.showMessageDialog(this, message, "Food Bank", JOptionPane.INFORMATION_MESSAGE);
     }
-    
-    private void clearFields(){
+
+    private void clearFields() {
         idField.setText("");
         nameField.setText("");
         quantityField.setText("");
@@ -308,16 +307,16 @@ public class FoodBankGUI extends javax.swing.JFrame {
     private void backBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backBtnActionPerformed
         // TODO add your handling code here:
         boolean formHasText = !idField.getText().isEmpty() || !nameField.getText().isEmpty()
-            || !quantityField.getText().isEmpty() || !expiryField.getText().isEmpty();
-        
+                || !quantityField.getText().isEmpty() || !expiryField.getText().isEmpty();
+
         if (formHasText) {
-        int answer = JOptionPane.showConfirmDialog(this,
-                "The form has unsaved input. Go back to the menu?",
-                "Leave Food Bank", javax.swing.JOptionPane.YES_NO_OPTION);
-        if (answer != JOptionPane.YES_OPTION) {
-            return;   // stay on this screen
+            int answer = JOptionPane.showConfirmDialog(this,
+                    "The form has unsaved input. Go back to the menu?",
+                    "Leave Food Bank", javax.swing.JOptionPane.YES_NO_OPTION);
+            if (answer != JOptionPane.YES_OPTION) {
+                return;   // stay on this screen
+            }
         }
-    }
         dispose();
     }//GEN-LAST:event_backBtnActionPerformed
 
@@ -328,7 +327,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
             showError("Please type a product name to search for.");
             return;
         }
-        
+
         StockItem found = manager.searchStock(text);
         if (found == null) {
             outputArea.setText("no item found for \"" + text + "\".");
@@ -339,51 +338,36 @@ public class FoodBankGUI extends javax.swing.JFrame {
 
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
         // TODO add your handling code here:
-        String id = idField.getText();
-        String name = nameField.getText();
-        String quantityText = quantityField.getText();
-        String expiry = expiryField.getText();
-        String category = (String)categoryCombo.getSelectedItem();
-        String storageType = (String)storageCombo.getSelectedItem();
-        
-        if (id.isEmpty() || name.isEmpty() || quantityText.isEmpty() || expiry.isEmpty()) {
-            showError("Please fill in every field");
-            return;
-        }
-        
-        int quantity;
-        try{
-            quantity = Integer.parseInt(quantityText);
-        } catch (NumberFormatException e) {
-            showError("Quantity must be a whole number, e.g. 40");
-            return;
-        }
-        if (quantity <= 0) {
-            showError("Quantity must be greater than 0.");
-            return;
-        }
-        
-        try{
-            LocalDate.parse(expiry);
-        } catch(DateTimeParseException e){
-            showError("Expiry date must be in the format yyyy-MM-dd.");
-            return;
-        }
-        
-        StockItem item = new StockItem(id, name, category, expiry, storageType, quantity);
-        if (manager.addStock(item)) {
+        try {
+            // may throw InvalidStockDataException (not a whole number)
+            int quantity = StockItem.parseQuantity(quantityField.getText());
+
+            // the constructor checks the other values itself
+            // and may throw InvalidStockDataException
+            StockItem item = new StockItem(
+                    idField.getText(),
+                    nameField.getText(),
+                    (String) categoryCombo.getSelectedItem(),
+                    expiryField.getText(),
+                    (String) storageCombo.getSelectedItem(),
+                    quantity);
+
+            // may throw DuplicateStockIdException or NoStorageSpaceException
+            manager.addStock(item);
             manager.saveToFile();
-            showInfo(name + " was added to stock");
+
+            showInfo(item.getName() + " was added to stock.");
             clearFields();
             outputArea.setText(manager.displayAllStock());
-        } else {
-            showError("No suitable storage space for " + quantity + " " + storageType + " item(s)");
+
+        } catch (FoodBankException e) {
+            // One catch for all four exception types (polymorphism)
+            showError(e.getMessage());
         }
     }//GEN-LAST:event_addBtnActionPerformed
 
     private void displayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayBtnActionPerformed
         // TODO add your handling code here:
-        manager.loadFromFile();
         outputArea.setText(manager.displayAllStock());
         outputArea.setCaretPosition(0);
     }//GEN-LAST:event_displayBtnActionPerformed
@@ -391,7 +375,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
     private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
         // TODO add your handling code here:
         String id = idField.getText();
-        
+
         if (id.isEmpty()) {
             id = JOptionPane.showInputDialog(this, "Enter the Stock ID to delete:", "Delete stock",
                     JOptionPane.QUESTION_MESSAGE);
@@ -400,35 +384,34 @@ public class FoodBankGUI extends javax.swing.JFrame {
             }
             id = id;
         }
-        
+
         int answer = JOptionPane.showConfirmDialog(this, "Delete stock item " + id + "?",
                 "Delete stock", JOptionPane.YES_NO_OPTION);
-        if(answer != JOptionPane.YES_OPTION){
+        if (answer != JOptionPane.YES_OPTION) {
             return;
         }
-        
-        if (manager.deleteStock(id)) {
+
+        try {
+            manager.deleteStock(id);
             manager.saveToFile();
             showInfo("Stock item " + id + " was deleted.");
-            clearFields();
-            outputArea.setText(manager.displayAllStock());
-        } else {
-            showError("No stock item with ID " + id + ".");
+        } catch (StockNotFoundException e) {
+            showError(e.getMessage());
         }
     }//GEN-LAST:event_deleteBtnActionPerformed
 
     private void lowStockBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lowStockBtnActionPerformed
         // TODO add your handling code here:
         ArrayList<StockItem> lowItems = manager.getLowStockItems();
-        
+
         if (lowItems.isEmpty()) {
             outputArea.setText("All stock levels are OK (no item below " + manager.getLowStockThreshold() + ").");
             return;
         }
-        
+
         StringBuilder sb = new StringBuilder("Low stock (below " + manager.getLowStockThreshold() + "):\n\n");
         Iterator<StockItem> it = lowItems.iterator();
-        while(it.hasNext()) {
+        while (it.hasNext()) {
             sb.append(it.next().displayDetails()).append("\n");
         }
         outputArea.setText(sb.toString());

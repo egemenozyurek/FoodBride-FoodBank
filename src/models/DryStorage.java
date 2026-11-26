@@ -9,6 +9,9 @@ package models;
  * @author egeme
  */
 public class DryStorage extends StorageUnit{
+    
+    private static final long serialVersionUID = 1L;
+    
     private int shelfCount;
 
     public DryStorage(String unitId, String location, int capacity, int shelfCount) {

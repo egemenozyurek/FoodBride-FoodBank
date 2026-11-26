@@ -4,6 +4,9 @@
  */
 package manager;
 
+import exceptions.DuplicateStockIdException;
+import exceptions.NoStorageSpaceException;
+import exceptions.StockNotFoundException;
 import interfaces.FileStorable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,40 +26,47 @@ import models.StorageUnit;
  *
  * @author egeme
  */
-public class InventoryManager implements FileStorable{
+public class InventoryManager implements FileStorable {
+
     private ArrayList<StorageUnit> storageUnits;
-    private int lowStockThreshold;
-    private static final String fileName = "foodbank.dat";
-    
+    private final int lowStockThreshold;
+    private static final String FILE_NAME = "foodbank.dat";
+
     public InventoryManager() {
         storageUnits = new ArrayList<>();
         lowStockThreshold = 10;
-        
+
         loadFromFile();
-        
-        addStorageUnit(new Fridge("FR1", "back Room"));
-        addStorageUnit(new Freezer("FZ1", "Back room"));
-        addStorageUnit(new DryStorage("DR1", "Main hall"));
+
+        if (storageUnits.isEmpty()) {
+            addStorageUnit(new Fridge("FR1", "Back Room"));
+            addStorageUnit(new Freezer("FZ1", "Back room"));
+            addStorageUnit(new DryStorage("DR1", "Main hall"));
+        }
     }
-    
-    public void addStorageUnit(StorageUnit unit) {
+
+    public final void addStorageUnit(StorageUnit unit) {
         storageUnits.add(unit);
     }
-    
-    public boolean addStock(StockItem item){
+
+    public void addStock(StockItem item) throws DuplicateStockIdException, NoStorageSpaceException {
+        if (stockIdExists(item.getStockId())) {
+            throw new DuplicateStockIdException(item.getStockId());
+        }
+
         for (StorageUnit unit : storageUnits) {
             if (unit.addStock(item)) {
-                return true;
+                return;
             }
         }
-        return false;
+        throw new NoStorageSpaceException(item);
     }
-    
-    public boolean stockIdExists(String stockId){
+
+    public boolean stockIdExists(String stockId) {
         Iterator<StorageUnit> unitIt = storageUnits.iterator();
-        while (unitIt.hasNext()){
+        while (unitIt.hasNext()) {
             Iterator<StockItem> itemIt = unitIt.next().getStockItems().iterator();
-            while(itemIt.hasNext()){
+            while (itemIt.hasNext()) {
                 if (itemIt.next().getStockId().equalsIgnoreCase(stockId)) {
                     return true;
                 }
@@ -64,19 +74,19 @@ public class InventoryManager implements FileStorable{
         }
         return false;
     }
-    
-    public String displayAllStock(){
+
+    public String displayAllStock() {
         StringBuilder sb = new StringBuilder();
         int total = 0;
-        
+
         for (StorageUnit unit : storageUnits) {
             sb.append(unit.displayDetails()).append("\n");
-            
+
             if (unit.getStockItems().isEmpty()) {
                 sb.append("  (empty)\n");
             }
             Iterator<StockItem> itemIt = unit.getStockItems().iterator();
-            while(itemIt.hasNext()){
+            while (itemIt.hasNext()) {
                 sb.append("  ").append(itemIt.next().displayDetails()).append("\n");
                 total++;
             }
@@ -85,12 +95,12 @@ public class InventoryManager implements FileStorable{
         sb.append(total).append(" item(s) in stock");
         return sb.toString();
     }
-    
-    public StockItem searchStock(String name){
+
+    public StockItem searchStock(String name) {
         String target = name.trim().toLowerCase();
-        
+
         Iterator<StorageUnit> unitIt = storageUnits.iterator();
-        while(unitIt.hasNext()){
+        while (unitIt.hasNext()) {
             for (StockItem item : unitIt.next().getStockItems()) {
                 if (item.getName().toLowerCase().contains(target)) {
                     return item;
@@ -99,26 +109,26 @@ public class InventoryManager implements FileStorable{
         }
         return null;
     }
-    
-    public boolean deleteStock(String stockId){
+
+    public void deleteStock(String stockId) throws StockNotFoundException {
         Iterator<StorageUnit> unitIt = storageUnits.iterator();
-        while(unitIt.hasNext()) {
+        while (unitIt.hasNext()) {
             Iterator<StockItem> itemIt = unitIt.next().getStockItems().iterator();
-            while(itemIt.hasNext()){
-                if (itemIt.next().getStockId().equalsIgnoreCase(stockId.trim())) {
+            while (itemIt.hasNext()) {
+                if (itemIt.next().getStockId().equalsIgnoreCase(stockId)) {
                     itemIt.remove();
-                    return true;
+                    return;
                 }
             }
         }
-        return false;
+        throw new StockNotFoundException(stockId);
     }
-    
-    public ArrayList<StockItem> getLowStockItems(){
+
+    public ArrayList<StockItem> getLowStockItems() {
         ArrayList<StockItem> low = new ArrayList<>();
-        
+
         Iterator<StorageUnit> unitIt = storageUnits.iterator();
-        while(unitIt.hasNext()){
+        while (unitIt.hasNext()) {
             for (StockItem item : unitIt.next().getStockItems()) {
                 if (item.isLowStock(lowStockThreshold)) {
                     low.add(item);
@@ -130,29 +140,29 @@ public class InventoryManager implements FileStorable{
 
     public int getLowStockThreshold() {
         return lowStockThreshold;
-    }   
+    }
 
     @Override
     public void saveToFile() {
-        try(ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(fileName))){
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
             out.writeObject(storageUnits);
-        } catch(IOException e) {
-            System.out.println("Could not save " + fileName + ": " + e.getMessage());
+        } catch (IOException e) {
+            System.out.println("Could not save " + FILE_NAME + ": " + e.getMessage());
         }
     }
 
     @Override
-    public void loadFromFile() {
-        File file = new File(fileName);
-        
+    public final void loadFromFile() {
+        File file = new File(FILE_NAME);
+
         if (!file.exists()) {
             return;
         }
-        
-        try(ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))){
+
+        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(file))) {
             storageUnits = (ArrayList<StorageUnit>) in.readObject();
-        } catch(IOException | ClassNotFoundException e) {
-            System.out.println("Could not load " + fileName + ": " + e.getMessage());
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Could not load " + FILE_NAME + ": " + e.getMessage());
             storageUnits = new ArrayList<>();
         }
     }

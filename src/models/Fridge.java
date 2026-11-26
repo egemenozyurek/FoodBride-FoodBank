@@ -10,6 +10,8 @@ package models;
  */
 public class Fridge extends StorageUnit{
     
+    private static final long serialVersionUID = 1L;
+    
     private int humidityLevel;
     public Fridge(String unitId, String location, int capacity, double temperature){
         super(unitId, location, capacity, temperature);
