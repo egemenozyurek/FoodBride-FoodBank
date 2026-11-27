@@ -34,6 +34,15 @@ public class StockItem implements Serializable {
         if (name == null || name.trim().isEmpty()) {
             throw new InvalidStockDataException("Please enter a product name.");
         }
+        
+        Category cat = Category.fromLabel(category);
+        if (cat == null) {
+            throw new InvalidStockDataException("Unknown category: " + category + ".");
+        }
+        
+        if (!cat.allows(storageType)) {
+            throw new InvalidStockDataException(cat.getLabel() + " cannot be stored as " + storageType + ". Allowed: " + String.join(", ", cat.getAllowedStorageTypes()));
+        }
 
         if (quantity <= 0) {
             throw new InvalidStockDataException("Quantity must be greater than 0.");
@@ -106,7 +115,11 @@ public class StockItem implements Serializable {
     public boolean isLowStock(int threshold) {
         return quantity < threshold;
     }
-
+    
+    public boolean isExpired() {
+        return LocalDate.parse(expiryDate).isBefore(LocalDate.now());
+    }
+    
     /**
      *
      * @return the item as one line of text for the Text Area

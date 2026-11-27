@@ -12,11 +12,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
-import models.DryStorage;
-import models.Freezer;
-import models.Fridge;
 import models.StockItem;
 import models.StorageUnit;
+import models.StorageUnitFactory;
 
 /**
  * Holds all storage units and provides Add / Display / Search / Delete, the
@@ -31,6 +29,7 @@ public class InventoryManager implements FileStorable {
     private ArrayList<StorageUnit> storageUnits;
     private final int lowStockThreshold;
     private static final String FILE_NAME = "foodbank.dat";
+    private static InventoryManager instance;
 
     /**
      * Loads the saved stock; on the first run creates one unit of each type
@@ -42,10 +41,23 @@ public class InventoryManager implements FileStorable {
         loadFromFile();
 
         if (storageUnits.isEmpty()) {
-            addStorageUnit(new Fridge("FR1", "Back Room"));
-            addStorageUnit(new Freezer("FZ1", "Back room"));
-            addStorageUnit(new DryStorage("DR1", "Main hall"));
+            addStorageUnit(StorageUnitFactory.createUnit("Chilled", "FR1", "Back room"));
+            addStorageUnit(StorageUnitFactory.createUnit("Frozen", "FZ1", "Back room"));
+            addStorageUnit(StorageUnitFactory.createUnit("Ambient", "DR1", "Main hall"));
         }
+    }
+
+    /**
+     * Returns the one InventoryManager, creating it the first time.
+     *
+     * @return the single shared InventoryManager
+     */
+    public static InventoryManager getInstance() {
+        if (instance == null) {  // first call: create it
+            instance = new InventoryManager();
+        }
+
+        return instance;  // every later call: the same object
     }
 
     public final void addStorageUnit(StorageUnit unit) {
@@ -107,10 +119,14 @@ public class InventoryManager implements FileStorable {
             }
             Iterator<StockItem> itemIt = unit.getStockItems().iterator(); // inner loop: the items of one unit
             while (itemIt.hasNext()) {
-                sb.append("  ").append(itemIt.next().displayDetails()).append("\n");
-                total++;
+                StockItem item = itemIt.next();
+                sb.append("  ").append(item.displayDetails());
+                if (item.isExpired()) {
+                    sb.append("   <-- Expired");
+                }
             }
             sb.append("\n");
+            total++;
         }
         sb.append(total).append(" item(s) in stock");
         return sb.toString();
@@ -155,6 +171,23 @@ public class InventoryManager implements FileStorable {
             }
         }
         throw new StockNotFoundException(stockId);
+    }
+
+    public ArrayList<StockItem> removeExpiredStock() {
+        ArrayList<StockItem> removed = new ArrayList<>();
+
+        Iterator<StorageUnit> unitIt = storageUnits.iterator();
+        while (unitIt.hasNext()) {
+            Iterator<StockItem> itemIt = unitIt.next().getStockItems().iterator();
+            while (itemIt.hasNext()) {
+                StockItem item = itemIt.next();
+                if (item.isExpired()) {
+                    itemIt.remove();  // keep looping: there may be more
+                    removed.add(item);
+                }
+            }
+        }
+        return removed;
     }
 
     /**

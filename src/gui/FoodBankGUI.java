@@ -4,8 +4,10 @@ import exceptions.FoodBankException;
 import exceptions.StockNotFoundException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import manager.InventoryManager;
+import models.Category;
 import models.StockItem;
 
 /**
@@ -17,13 +19,13 @@ import models.StockItem;
  * @author egeme
  */
 public class FoodBankGUI extends javax.swing.JFrame {
-
+    
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(FoodBankGUI.class.getName());
-
+    
     private InventoryManager manager;
-
+    
     public FoodBankGUI() {
-        this(new InventoryManager());
+        this(InventoryManager.getInstance());
     }
 
     /**
@@ -34,26 +36,36 @@ public class FoodBankGUI extends javax.swing.JFrame {
     public FoodBankGUI(InventoryManager manager) {
         initComponents();
         this.manager = manager;
-
+        
         addBtn.addActionListener(this::addBtnActionPerformed);
         displayBtn.addActionListener(this::displayBtnActionPerformed);
         deleteBtn.addActionListener(this::deleteBtnActionPerformed);
         lowStockBtn.addActionListener(this::lowStockBtnActionPerformed);
         clearBtn.addActionListener(this::clearBtnActionPerformed);
+        removeExpiredBtn.addActionListener(this::removeExpiredBtnActionPerformed);
         searchField.addActionListener(evt -> searchBtn.doClick());
-
+        categoryCombo.addActionListener(evt -> updateStorageOptions());
+        updateStorageOptions();
+        
         getRootPane().setDefaultButton(addBtn);
         setLocationRelativeTo(null);
     }
-
+    
+    private void updateStorageOptions() {
+        Category category = Category.fromLabel((String) categoryCombo.getSelectedItem());
+        if (category == null) {
+            storageCombo.setModel(new DefaultComboBoxModel<>(category.getAllowedStorageTypes()));
+        }
+    }
+    
     private void showError(String message) {
         JOptionPane.showMessageDialog(this, message, "Food Bank", JOptionPane.ERROR_MESSAGE);
     }
-
+    
     private void showInfo(String message) {
         JOptionPane.showMessageDialog(this, message, "Food Bank", JOptionPane.INFORMATION_MESSAGE);
     }
-
+    
     private void clearFields() {
         idField.setText("");
         nameField.setText("");
@@ -96,6 +108,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
         deleteBtn = new javax.swing.JButton();
         lowStockBtn = new javax.swing.JButton();
         clearBtn = new javax.swing.JButton();
+        removeExpiredBtn = new javax.swing.JButton();
         backBtn = new javax.swing.JButton();
         rightPanel = new javax.swing.JPanel();
         searchPanel = new javax.swing.JPanel();
@@ -167,7 +180,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
 
         buttonPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 0, 30, 0));
         buttonPanel.setOpaque(false);
-        buttonPanel.setLayout(new java.awt.GridLayout(3, 2, 8, 8));
+        buttonPanel.setLayout(new java.awt.GridLayout(4, 2, 8, 8));
 
         addBtn.setBackground(new java.awt.Color(21, 101, 192));
         addBtn.setForeground(new java.awt.Color(255, 255, 255));
@@ -238,6 +251,19 @@ public class FoodBankGUI extends javax.swing.JFrame {
         });
         buttonPanel.add(clearBtn);
 
+        removeExpiredBtn.setBackground(new java.awt.Color(255, 255, 255));
+        removeExpiredBtn.setForeground(new java.awt.Color(21, 101, 192));
+        removeExpiredBtn.setText("Remove Expired");
+        removeExpiredBtn.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        removeExpiredBtn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        removeExpiredBtn.setFocusPainted(false);
+        removeExpiredBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeExpiredBtnActionPerformed(evt);
+            }
+        });
+        buttonPanel.add(removeExpiredBtn);
+
         backBtn.setBackground(new java.awt.Color(85, 85, 85));
         backBtn.setForeground(new java.awt.Color(255, 255, 255));
         backBtn.setText("Back to Menu");
@@ -305,10 +331,10 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void backBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backBtnActionPerformed
-
+        
         boolean formHasText = !idField.getText().isEmpty() || !nameField.getText().isEmpty()
                 || !quantityField.getText().isEmpty() || !expiryField.getText().isEmpty();
-
+        
         if (formHasText) {
             int answer = JOptionPane.showConfirmDialog(this,
                     "The form has unsaved input. Go back to the menu?",
@@ -321,13 +347,13 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_backBtnActionPerformed
 
     private void searchBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBtnActionPerformed
-
+        
         String text = searchField.getText();
         if (text.isEmpty()) {
             showError("Please type a product name to search for.");
             return;
         }
-
+        
         StockItem found = manager.searchStock(text);
         if (found == null) {
             outputArea.setText("no item found for \"" + text + "\".");
@@ -337,7 +363,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_searchBtnActionPerformed
 
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
-
+        
         try {
             // may throw InvalidStockDataException (not a whole number)
             int quantity = StockItem.parseQuantity(quantityField.getText());
@@ -355,11 +381,11 @@ public class FoodBankGUI extends javax.swing.JFrame {
             // may throw DuplicateStockIdException or NoStorageSpaceException
             manager.addStock(item);
             manager.saveToFile();
-
+            
             showInfo(item.getName() + " was added to stock.");
             clearFields();
             outputArea.setText(manager.displayAllStock());
-
+            
         } catch (FoodBankException e) {
             // One catch for all four exception types (polymorphism)
             showError(e.getMessage());
@@ -367,15 +393,15 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_addBtnActionPerformed
 
     private void displayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayBtnActionPerformed
-
+        
         outputArea.setText(manager.displayAllStock());
         outputArea.setCaretPosition(0);
     }//GEN-LAST:event_displayBtnActionPerformed
 
     private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
-
+        
         String id = idField.getText();
-
+        
         if (id.isEmpty()) {
             id = JOptionPane.showInputDialog(this, "Enter the Stock ID to delete:", "Delete stock",
                     JOptionPane.QUESTION_MESSAGE);
@@ -384,13 +410,13 @@ public class FoodBankGUI extends javax.swing.JFrame {
             }
             id = id;
         }
-
+        
         int answer = JOptionPane.showConfirmDialog(this, "Delete stock item " + id + "?",
                 "Delete stock", JOptionPane.YES_NO_OPTION);
         if (answer != JOptionPane.YES_OPTION) {
             return;
         }
-
+        
         try {
             manager.deleteStock(id);
             manager.saveToFile();
@@ -401,14 +427,14 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_deleteBtnActionPerformed
 
     private void lowStockBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lowStockBtnActionPerformed
-
+        
         ArrayList<StockItem> lowItems = manager.getLowStockItems();
-
+        
         if (lowItems.isEmpty()) {
             outputArea.setText("All stock levels are OK (no item below " + manager.getLowStockThreshold() + ").");
             return;
         }
-
+        
         StringBuilder sb = new StringBuilder("Low stock (below " + manager.getLowStockThreshold() + "):\n\n");
         Iterator<StockItem> it = lowItems.iterator();
         while (it.hasNext()) {
@@ -418,9 +444,33 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_lowStockBtnActionPerformed
 
     private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearBtnActionPerformed
-        // TODO add your handling code here:
+        
         clearFields();
     }//GEN-LAST:event_clearBtnActionPerformed
+
+    private void removeExpiredBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeExpiredBtnActionPerformed
+        
+        int answer = JOptionPane.showConfirmDialog(this,
+                "Remove every item whose expiry date has passed?",
+                "Remove expired stock", JOptionPane.YES_NO_OPTION);
+        if (answer != JOptionPane.YES_OPTION) {
+            return;
+        }
+        
+        ArrayList<StockItem> removed = manager.removeExpiredStock();
+        if (removed.isEmpty()) {
+            showInfo("No expired items were found.");
+            return;
+        }
+        manager.saveToFile();
+        
+        StringBuilder sb = new StringBuilder("Removed " + removed.size() + " expired item(s):\n\n");
+        Iterator<StockItem> it = removed.iterator();
+        while (it.hasNext()) {
+            sb.append(it.next().displayDetails()).append("\n");
+        }
+        outputArea.setText(sb.toString());
+    }//GEN-LAST:event_removeExpiredBtnActionPerformed
 
     /**
      * @param args the command line arguments
@@ -472,6 +522,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
     private javax.swing.JTextField nameField;
     private javax.swing.JTextArea outputArea;
     private javax.swing.JTextField quantityField;
+    private javax.swing.JButton removeExpiredBtn;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JButton searchBtn;
     private javax.swing.JTextField searchField;
