@@ -1,15 +1,15 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Interface.java to edit this template
- */
+
 package interfaces;
 
 /**
- *
+ * Contract for every class that saves its data to a file.
+ * Implemented by Inventorymanager. In the group project the main menu keeps 
+ * all managers in a FileStorable[] array and saves them in one loop.
+ * 
  * @author egeme
  */
 public interface FileStorable {
-    void saveToFile();
+    void saveToFile(); //write the data to the file.
     
-    void loadFromFile();
+    void loadFromFile(); //read the data back from the file.
 }

@@ -1,13 +1,12 @@
-/*
- 
-*/
+
 package foodbank;
 
 import gui.FoodBankGUI;
 import java.awt.EventQueue;
 
 /**
- *
+ * Starts the Food Bank application.
+ * 
  * @author egeme
  */
 public class FoodBankApp {

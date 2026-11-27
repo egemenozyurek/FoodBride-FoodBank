@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
+
 package gui;
 
 import exceptions.FoodBankException;
@@ -13,7 +10,11 @@ import manager.InventoryManager;
 import models.StockItem;
 
 /**
- *
+ * Screen of the Food Bank Inventory section.
+ * Reads the form, sends the data to InventoryManager and shows the results.
+ * The buttons are connected in the constructor (not in the Design tab),
+ * so NetBeans never removes the connections when it regenerates initComponents().
+ * 
  * @author egeme
  */
 public class FoodBankGUI extends javax.swing.JFrame {

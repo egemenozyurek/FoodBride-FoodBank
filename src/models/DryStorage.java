@@ -1,11 +1,10 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package models;
 
 /**
- *
+ * Room-temperature shelves for tins, pasta, rice.
+ * Only accepts "Ambient" items.
+ * Its temperature is always 20 C, so it is not a constructor parameter.
  * @author egeme
  */
 public class DryStorage extends StorageUnit{

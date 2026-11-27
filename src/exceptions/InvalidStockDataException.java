@@ -1,11 +1,8 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package exceptions;
 
 /**
- *
+ * Thrown when stock data is missing or in the wrong format
  * @author egeme
  */
 public class InvalidStockDataException extends FoodBankException{

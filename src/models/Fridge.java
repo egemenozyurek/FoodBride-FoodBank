@@ -1,11 +1,9 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package models;
 
 /**
- *
+ * Chilled storage (1-5 C) for dairy, meat and prepared food.
+ * Only accepts "Chilled" items
  * @author egeme
  */
 public class Fridge extends StorageUnit{
@@ -13,6 +11,7 @@ public class Fridge extends StorageUnit{
     private static final long serialVersionUID = 1L;
     
     private int humidityLevel;
+    // Overloaded: default capacity 100 and 4 C
     public Fridge(String unitId, String location, int capacity, double temperature){
         super(unitId, location, capacity, temperature);
         this.humidityLevel = 60;
@@ -30,6 +29,11 @@ public class Fridge extends StorageUnit{
         this.humidityLevel = humidtyLevel;
     }
     
+    /**
+     * Accepts only Chilled items, and only if there is enough free space
+     * @param item
+     * @return true if the item can go in this fridge
+     */
     @Override
     public boolean canStore(StockItem item) {
         return item.getStorageType().equals("Chilled")

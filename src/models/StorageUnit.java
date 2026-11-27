@@ -1,7 +1,4 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+
 package models;
 
 import interfaces.TemperatureControl;
@@ -9,7 +6,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- *
+ * Common parent for every place food can be stored (Fridge, Freezer, DryStorage).
+ * Holds its own list of stock items. canStore() is left abstract so that each 
+ * subclass decides which items it accepts (polymorphism / Template Method).
+ * 
  * @author egeme
  */
 public abstract class StorageUnit implements Serializable, TemperatureControl{
@@ -31,6 +31,10 @@ public abstract class StorageUnit implements Serializable, TemperatureControl{
         this.stockItems = new ArrayList<>();
     }
     
+    /**
+     * Returns the real list, not a copy, so InventoryManager can remove items with an iterator.
+     * @return 
+     */
     public ArrayList<StockItem> getStockItems(){
         return stockItems;
     }
@@ -43,13 +47,24 @@ public abstract class StorageUnit implements Serializable, TemperatureControl{
         return capacity;
     }
 
+    @Override
     public double getTemperature() {
         return temperature;
     }
-
+    
+    /**
+     * Each storage type writes its own rule
+     * @param item
+     * @return 
+     */
     @Override
     public abstract boolean canStore(StockItem item);
-      
+    
+    /**
+     * Adds the item item only if canStore() allows it
+     * @param item
+     * @return true if the item was stored
+     */
     public boolean addStock(StockItem item) {
         if(canStore(item)){
             stockItems.add(item);
@@ -57,7 +72,11 @@ public abstract class StorageUnit implements Serializable, TemperatureControl{
         }
         return false;
     }
-
+    
+    /**
+     * 
+     * @return capacity minus the total quantity already stored
+     */
     @Override
     public int getFreeSpace() {
         int used = 0;
