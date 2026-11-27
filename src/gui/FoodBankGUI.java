@@ -1,4 +1,3 @@
-
 package gui;
 
 import exceptions.FoodBankException;
@@ -10,11 +9,11 @@ import manager.InventoryManager;
 import models.StockItem;
 
 /**
- * Screen of the Food Bank Inventory section.
- * Reads the form, sends the data to InventoryManager and shows the results.
- * The buttons are connected in the constructor (not in the Design tab),
- * so NetBeans never removes the connections when it regenerates initComponents().
- * 
+ * Screen of the Food Bank Inventory section. Reads the form, sends the data to
+ * InventoryManager and shows the results. The buttons are connected in the
+ * constructor (not in the Design tab), so NetBeans never removes the
+ * connections when it regenerates initComponents().
+ *
  * @author egeme
  */
 public class FoodBankGUI extends javax.swing.JFrame {
@@ -306,7 +305,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void backBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backBtnActionPerformed
-        // TODO add your handling code here:
+
         boolean formHasText = !idField.getText().isEmpty() || !nameField.getText().isEmpty()
                 || !quantityField.getText().isEmpty() || !expiryField.getText().isEmpty();
 
@@ -322,7 +321,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_backBtnActionPerformed
 
     private void searchBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBtnActionPerformed
-        // TODO add your handling code here:
+
         String text = searchField.getText();
         if (text.isEmpty()) {
             showError("Please type a product name to search for.");
@@ -338,7 +337,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_searchBtnActionPerformed
 
     private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
-        // TODO add your handling code here:
+
         try {
             // may throw InvalidStockDataException (not a whole number)
             int quantity = StockItem.parseQuantity(quantityField.getText());
@@ -368,13 +367,13 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_addBtnActionPerformed
 
     private void displayBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_displayBtnActionPerformed
-        // TODO add your handling code here:
+
         outputArea.setText(manager.displayAllStock());
         outputArea.setCaretPosition(0);
     }//GEN-LAST:event_displayBtnActionPerformed
 
     private void deleteBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteBtnActionPerformed
-        // TODO add your handling code here:
+
         String id = idField.getText();
 
         if (id.isEmpty()) {
@@ -402,7 +401,7 @@ public class FoodBankGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_deleteBtnActionPerformed
 
     private void lowStockBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lowStockBtnActionPerformed
-        // TODO add your handling code here:
+
         ArrayList<StockItem> lowItems = manager.getLowStockItems();
 
         if (lowItems.isEmpty()) {

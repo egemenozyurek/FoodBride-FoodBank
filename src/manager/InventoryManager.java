@@ -1,4 +1,3 @@
-
 package manager;
 
 import exceptions.DuplicateStockIdException;
@@ -20,10 +19,11 @@ import models.StockItem;
 import models.StorageUnit;
 
 /**
- * Holds all storage units and provides Add / Display / Search / Delete,
- * the low-stock list and file storage.
- * The GUI only talks tot this class, never to the lists directly
- * (seperation of concerns). problems are reported with custom exceptions.
+ * Holds all storage units and provides Add / Display / Search / Delete, the
+ * low-stock list and file storage. The GUI only talks tot this class, never to
+ * the lists directly (seperation of concerns). problems are reported with
+ * custom exceptions.
+ *
  * @author egeme
  */
 public class InventoryManager implements FileStorable {
@@ -31,8 +31,7 @@ public class InventoryManager implements FileStorable {
     private ArrayList<StorageUnit> storageUnits;
     private final int lowStockThreshold;
     private static final String FILE_NAME = "foodbank.dat";
-    
-    
+
     /**
      * Loads the saved stock; on the first run creates one unit of each type
      */
@@ -52,12 +51,13 @@ public class InventoryManager implements FileStorable {
     public final void addStorageUnit(StorageUnit unit) {
         storageUnits.add(unit);
     }
-    
+
     /**
      * Puts the item in the first unit whose canStore() accepts it.
+     *
      * @param item
      * @throws DuplicateStockIdException
-     * @throws NoStorageSpaceException 
+     * @throws NoStorageSpaceException
      */
     public void addStock(StockItem item) throws DuplicateStockIdException, NoStorageSpaceException {
         if (stockIdExists(item.getStockId())) {
@@ -71,9 +71,9 @@ public class InventoryManager implements FileStorable {
         }
         throw new NoStorageSpaceException(item);
     }
-    
+
     /**
-     * 
+     *
      * @param stockId
      * @return true if any unit already holds an item with this ID
      */
@@ -89,9 +89,10 @@ public class InventoryManager implements FileStorable {
         }
         return false;
     }
-    
+
     /**
      * Every unit with the items inside it
+     *
      * @return the text for the results area
      */
     public String displayAllStock() {
@@ -114,12 +115,13 @@ public class InventoryManager implements FileStorable {
         sb.append(total).append(" item(s) in stock");
         return sb.toString();
     }
-    
+
     /**
-     * First item whose name contains the text. Returns null instead of throwing,
-     * because "not found" is a normal search result
+     * First item whose name contains the text. Returns null instead of
+     * throwing, because "not found" is a normal search result
+     *
      * @param name
-     * @return 
+     * @return
      */
     public StockItem searchStock(String name) {
         String target = name.trim().toLowerCase();
@@ -134,11 +136,12 @@ public class InventoryManager implements FileStorable {
         }
         return null;
     }
-    
+
     /**
-     * uses Iterator.remove() for safe removal. 
+     * uses Iterator.remove() for safe removal.
+     *
      * @param stockId
-     * @throws StockNotFoundException 
+     * @throws StockNotFoundException
      */
     public void deleteStock(String stockId) throws StockNotFoundException {
         Iterator<StorageUnit> unitIt = storageUnits.iterator();
@@ -153,9 +156,9 @@ public class InventoryManager implements FileStorable {
         }
         throw new StockNotFoundException(stockId);
     }
-    
+
     /**
-     * 
+     *
      * @return a new list of items below the threshold
      */
     public ArrayList<StockItem> getLowStockItems() {
@@ -175,7 +178,7 @@ public class InventoryManager implements FileStorable {
     public int getLowStockThreshold() {
         return lowStockThreshold;
     }
-    
+
     /**
      * Writes the whole list (units and their items) with ObjectsOutputStream
      */
@@ -187,7 +190,7 @@ public class InventoryManager implements FileStorable {
             System.out.println("Could not save " + FILE_NAME + ": " + e.getMessage());
         }
     }
-    
+
     /**
      * Reads the list back; does nothing if the file does not exist yet.
      */
