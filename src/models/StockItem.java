@@ -53,7 +53,7 @@ public class StockItem implements Serializable {
     
     public static int parseQuantity(String text) throws InvalidStockDataException {
         try {
-            return Integer.parseInt(text);
+            return Integer.parseInt(text.trim());
         } catch (NumberFormatException e) {
             throw new InvalidStockDataException("Quantity must be a whole number");
         }
